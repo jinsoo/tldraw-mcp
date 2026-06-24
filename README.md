@@ -97,3 +97,25 @@ The correct write shape (do NOT use `serializeTldrawJson` — needs `Editor`):
 ```
 
 `schemaVersion` is `2` for tldraw 5.1.1.
+
+## Universal install (any agent)
+
+Runs straight from GitHub — no npm account, no local checkout:
+
+```bash
+npx -y github:jinsoo/tldraw-mcp
+```
+
+Claude Code (`.mcp.json`):
+
+```json
+{ "mcpServers": { "tldraw": { "type": "stdio", "command": "npx", "args": ["-y", "github:jinsoo/tldraw-mcp"] } } }
+```
+
+Hermes / any OpenAI-gateway agent (`config.yaml` `mcp_servers`):
+
+```yaml
+tldraw: { type: stdio, command: npx, args: ["-y", "github:jinsoo/tldraw-mcp"], enabled: true }
+```
+
+Tools: `read_tldr`, `write_tldr`, `validate_tldr`.
