@@ -1,5 +1,5 @@
 /**
- * richText helpers — headless plain ↔ ProseMirror (Task 5)
+ * richText helpers — headless plain ↔ ProseMirror
  *
  * toRich: delegates to tldraw's `toRichText` from @tldraw/tlschema (headless-safe,
  *         confirmed not to hang node in 5.1.1).

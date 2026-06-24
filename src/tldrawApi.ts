@@ -1,5 +1,5 @@
 /**
- * THE pinned headless tldraw API surface (Task 2 — grok1 pin #1).
+ * THE pinned headless tldraw API surface.
  *
  * ALL raw tldraw imports live here and nowhere else. If an import path is wrong for
  * the installed version, THIS file is the ONLY place to fix it.

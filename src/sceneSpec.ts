@@ -1,7 +1,5 @@
 /**
- * SceneSpec — high-level scene description → tldraw store records (Task 6).
- *
- * Create path only (Task 6). Merge path in Task 9. Edge records in Task 7.
+ * SceneSpec — high-level scene description → tldraw store records.
  *
  * NEVER imports from 'tldraw' or '@tldraw/editor' — those hang Node.
  * All tldraw access goes through tldrawApi.ts only.
@@ -135,11 +133,11 @@ function buildShapeRecord(node: SceneNode, sid: string, index: string): Record<s
  * throws immediately with the field name.
  *
  * The scene-id → shape-id map is stashed as `store.__idMap` (Map<string,string>)
- * so Task 7's edge builder can resolve arrow endpoints without re-scanning.
+ * so the edge builder can resolve arrow endpoints without re-scanning.
  *
  * @param scene   - The scene to create.
  * @param opts    - Pass `existing` to add nodes into an already-bootstrapped store
- *                  (used by Task 9 merge path); omit for a fresh store.
+ *                  (used by the merge path); omit for a fresh store.
  */
 export function fromScene(scene: SceneSpec, opts: { existing?: any } = {}): any {
   const store = opts.existing ?? makeStore()
@@ -162,7 +160,7 @@ export function fromScene(scene: SceneSpec, opts: { existing?: any } = {}): any 
     })
   }
 
-  // scene-id → shape:id map; stashed for Task 7's edge builder
+  // scene-id → shape:id map; stashed for the edge builder
   const idMap = new Map<string, string>()
 
   scene.nodes.forEach((node, i) => {
@@ -171,10 +169,10 @@ export function fromScene(scene: SceneSpec, opts: { existing?: any } = {}): any 
     putRecord(store, buildShapeRecord(node, sid, indexAt(i)))
   })
 
-  // Stash on the store object for Task 7 (edges need endpoint shape ids)
+  // Stash on the store object for the edge loop (edges need endpoint shape ids)
   ;(store as any).__idMap = idMap
 
-  // ── Edge loop (Task 7): each SceneEdge → one arrow shape + two binding records ──
+  // ── Edge loop: each SceneEdge → one arrow shape + two binding records ──
   const edges = scene.edges ?? []
   edges.forEach((edge, j) => {
     const fromShapeId = idMap.get(edge.from)
@@ -319,7 +317,7 @@ export function toScene(
   return { scene: { nodes, edges }, unmodeled, rawRecordsCount }
 }
 
-// ── Merge path (Task 9) ───────────────────────────────────────────────────────
+// ── Merge path ────────────────────────────────────────────────────────────────
 
 /**
  * Merges scene-spec edits onto existing store records BY ID.
@@ -379,7 +377,7 @@ export function mergeScene(store: any, edits: SceneSpec): any {
   return store
 }
 
-// ── Validate path (Task 10) ───────────────────────────────────────────────────
+// ── Validate path ─────────────────────────────────────────────────────────────
 
 const VALID_KINDS = new Set(['box', 'note', 'text'])
 const BOX_ONLY_FIELDS = ['shape', 'w', 'h', 'fill', 'dash']

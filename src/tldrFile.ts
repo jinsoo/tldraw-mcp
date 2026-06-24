@@ -1,5 +1,5 @@
 /**
- * tldrFile.ts — headless .tldr file reader with auto-migration (Task 3).
+ * tldrFile.ts — headless .tldr file reader with auto-migration.
  *
  * Reads the on-disk envelope:
  *   { tldrawFileFormatVersion: 1, schema: SerializedSchema, records: TLRecord[] }
@@ -10,7 +10,7 @@
  *   where `store` is a Record<id, TLRecord> map and `schema` is the file's serialized
  *   schema. Returns { type: 'success', value: map } or { type: 'error', reason }.
  *
- * NEVER imports from 'tldraw' or '@tldraw/editor' — those hang Node (Task 2 finding).
+ * NEVER imports from 'tldraw' or '@tldraw/editor' — those hang Node.
  * All tldraw access goes through tldrawApi.ts only.
  */
 

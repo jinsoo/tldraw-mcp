@@ -59,13 +59,7 @@ Add to your repo's `.mcp.json` (already committed at repo root):
 }
 ```
 
-> Task 20 switches this (and the `dist.test.ts` assertion) to the universal
-> `npx -y github:jinsoo/tldraw-mcp` form once the standalone repo is published.
-
-## Hermes / gateway registration (deferred to Task 20)
-
-Task 20 wires Hermes directly to the `npx github:` form. Do NOT edit
-`~/.hermes/profiles/neaspec/config.yaml` until Task 20.
+> The universal `npx -y github:jinsoo/tldraw-mcp` form (see below) can also be used here once the standalone repo is published.
 
 ## Upstream tracking
 
@@ -112,7 +106,7 @@ Claude Code (`.mcp.json`):
 { "mcpServers": { "tldraw": { "type": "stdio", "command": "npx", "args": ["-y", "github:jinsoo/tldraw-mcp"] } } }
 ```
 
-Hermes / any OpenAI-gateway agent (`config.yaml` `mcp_servers`):
+Any MCP host that registers stdio servers (`config.yaml` `mcp_servers` example):
 
 ```yaml
 tldraw: { type: stdio, command: npx, args: ["-y", "github:jinsoo/tldraw-mcp"], enabled: true }

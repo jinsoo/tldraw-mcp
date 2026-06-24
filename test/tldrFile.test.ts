@@ -1,11 +1,10 @@
 /**
- * tldrFile.test.ts — tests for readTldrFile (Task 3).
+ * tldrFile.test.ts — tests for readTldrFile.
  *
  * Fixtures are GENERATED programmatically (no browser required):
  *   current.tldr — built via makeStore() + putRecord(); exact current-version envelope.
  *   old.tldr     — copy of current.tldr with com.tldraw.shape.geo sequence decremented
  *                  by 1 to force an up-migration on read.
- * See tools/tldraw-mcp/test/fixtures/ and Task 3 controller note in .superpowers/sdd/.
  */
 
 import { describe, it, expect } from 'vitest'
