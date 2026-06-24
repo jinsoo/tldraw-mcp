@@ -8,8 +8,8 @@
  * @tldraw/utils (reordering) is DOM-free and safe to import directly.
  */
 
-import { makeStore, putRecord, getDefaultPropsFor, createShapeId, createBindingId } from './tldrawApi.js'
-import { toRich } from './richtext.js'
+import { makeStore, putRecord, getDefaultPropsFor, createShapeId, createBindingId, allRecords } from './tldrawApi.js'
+import { toRich, toPlain } from './richtext.js'
 import { getIndicesAbove, ZERO_INDEX_KEY } from '@tldraw/utils'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -222,4 +222,99 @@ export function fromScene(scene: SceneSpec, opts: { existing?: any } = {}): any 
   })
 
   return store
+}
+
+// ── Read path ─────────────────────────────────────────────────────────────────
+
+/**
+ * Converts a tldraw store back to a SceneSpec (read path).
+ *
+ * - geo shapes → BoxNode
+ * - note shapes → NoteNode
+ * - text shapes → TextNode
+ * - arrow shapes + their two binding records → SceneEdge
+ *   (binding.props.terminal==='start' → edge.from, 'end' → edge.to, both via toId)
+ * - all other shape types → unmodeled list
+ *
+ * Returns `rawRecordsCount` as the total record count in the store (all typeName values).
+ */
+export function toScene(
+  store: any,
+): { scene: SceneSpec; unmodeled: { id: string; type: string }[]; rawRecordsCount: number } {
+  const recs: any[] = allRecords(store)
+  const rawRecordsCount = recs.length
+
+  // Index shapes and bindings
+  const shapes = recs.filter((r: any) => r.typeName === 'shape')
+  const bindings = recs.filter((r: any) => r.typeName === 'binding')
+
+  const nodes: SceneNode[] = []
+  const unmodeled: { id: string; type: string }[] = []
+
+  for (const r of shapes) {
+    if (r.type === 'geo') {
+      const node: BoxNode = {
+        id: r.id,
+        kind: 'box',
+        text: toPlain(r.props.richText),
+        x: r.x,
+        y: r.y,
+      }
+      if (r.props.geo !== 'rectangle') node.shape = r.props.geo
+      if (r.props.w != null) node.w = r.props.w
+      if (r.props.h != null) node.h = r.props.h
+      if (r.props.color != null) node.color = r.props.color
+      if (r.props.fill != null && r.props.fill !== 'none') node.fill = r.props.fill
+      if (r.props.dash != null) node.dash = r.props.dash
+      nodes.push(node)
+    } else if (r.type === 'note') {
+      const node: NoteNode = {
+        id: r.id,
+        kind: 'note',
+        text: toPlain(r.props.richText),
+        x: r.x,
+        y: r.y,
+      }
+      if (r.props.color != null) node.color = r.props.color
+      nodes.push(node)
+    } else if (r.type === 'text') {
+      const node: TextNode = {
+        id: r.id,
+        kind: 'text',
+        text: toPlain(r.props.richText),
+        x: r.x,
+        y: r.y,
+      }
+      if (r.props.color != null) node.color = r.props.color
+      if (r.props.size != null) node.size = r.props.size
+      nodes.push(node)
+    } else if (r.type !== 'arrow') {
+      unmodeled.push({ id: r.id, type: r.type })
+    }
+  }
+
+  // Reconstruct edges: each arrow + its two bindings → one SceneEdge
+  const arrowShapes = shapes.filter((r: any) => r.type === 'arrow')
+  const edges: SceneEdge[] = []
+
+  for (const arrow of arrowShapes) {
+    const bs = bindings.filter((b: any) => b.fromId === arrow.id)
+    const startBinding = bs.find((b: any) => b.props.terminal === 'start')
+    const endBinding = bs.find((b: any) => b.props.terminal === 'end')
+    if (startBinding && endBinding) {
+      const edge: SceneEdge = {
+        from: startBinding.toId,
+        to: endBinding.toId,
+      }
+      const label = toPlain(arrow.props.richText)
+      if (label) edge.text = label
+      if (arrow.props.arrowheadStart != null) edge.arrowheadStart = arrow.props.arrowheadStart
+      if (arrow.props.arrowheadEnd != null) edge.arrowheadEnd = arrow.props.arrowheadEnd
+      if (arrow.props.dash != null) edge.dash = arrow.props.dash
+      if (arrow.props.color != null) edge.color = arrow.props.color
+      edges.push(edge)
+    }
+  }
+
+  return { scene: { nodes, edges }, unmodeled, rawRecordsCount }
 }
