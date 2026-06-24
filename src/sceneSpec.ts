@@ -32,6 +32,7 @@ export interface BoxNode {
   color?: string
   fill?: string
   dash?: string
+  size?: string         // label font size: s | m | l | xl (default m)
 }
 
 export interface NoteNode {
@@ -41,6 +42,7 @@ export interface NoteNode {
   x: number
   y: number
   color?: string
+  size?: string         // label font size: s | m | l | xl
 }
 
 export interface TextNode {
@@ -107,12 +109,14 @@ function buildShapeRecord(node: SceneNode, sid: string, index: string): Record<s
     if (node.color != null) p.color = node.color
     if (node.fill != null) p.fill = node.fill
     if (node.dash != null) p.dash = node.dash
+    if (node.size != null) p.size = node.size
     return { ...base, type: 'geo', props: p }
   }
 
   if (node.kind === 'note') {
     const p: any = { ...getDefaultPropsFor('note'), richText: toRich(node.text) }
     if (node.color != null) p.color = node.color
+    if (node.size != null) p.size = node.size
     return { ...base, type: 'note', props: p }
   }
 
@@ -264,6 +268,7 @@ export function toScene(
       if (r.props.color != null) node.color = r.props.color
       if (r.props.fill != null && r.props.fill !== 'none') node.fill = r.props.fill
       if (r.props.dash != null) node.dash = r.props.dash
+      if (r.props.size != null && r.props.size !== 'm') node.size = r.props.size
       nodes.push(node)
     } else if (r.type === 'note') {
       const node: NoteNode = {
@@ -274,6 +279,7 @@ export function toScene(
         y: r.y,
       }
       if (r.props.color != null) node.color = r.props.color
+      if (r.props.size != null && r.props.size !== 'm') node.size = r.props.size
       nodes.push(node)
     } else if (r.type === 'text') {
       const node: TextNode = {
@@ -370,6 +376,7 @@ export function mergeScene(store: any, edits: SceneSpec): any {
     if ((node as any).shape != null) next.props.geo = (node as any).shape
     if ((node as any).fill != null) next.props.fill = (node as any).fill
     if ((node as any).dash != null) next.props.dash = (node as any).dash
+    if ((node as any).size != null) next.props.size = (node as any).size
 
     putRecord(store, next)
   }
