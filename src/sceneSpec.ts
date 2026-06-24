@@ -318,3 +318,63 @@ export function toScene(
 
   return { scene: { nodes, edges }, unmodeled, rawRecordsCount }
 }
+
+// ── Merge path (Task 9) ───────────────────────────────────────────────────────
+
+/**
+ * Merges scene-spec edits onto existing store records BY ID.
+ *
+ * Strategy (merge-not-replace / grok HIGH gate):
+ *   - Build a Map of all existing records keyed by id.
+ *   - For each node in `edits`:
+ *       • If no record with that id exists → CREATE it via `fromScene` delegate.
+ *       • If it exists → shallow-clone the record + props, then overwrite ONLY
+ *         the fields explicitly present in the edit node. All other props
+ *         (rotation, custom color, meta, group nesting, etc.) are untouched.
+ *   - Returns the same store (mutated in place via putRecord).
+ *
+ * Fields mapped from SceneNode → record (only when present on the edit node):
+ *   x, y           → record.x / record.y
+ *   text           → props.richText  (via toRich)
+ *   w              → props.w
+ *   h              → props.h
+ *   color          → props.color
+ *   shape          → props.geo
+ *   fill           → props.fill
+ *   dash           → props.dash
+ *
+ * @param store  - Existing TLStore (mutated in place).
+ * @param edits  - SceneSpec carrying only the nodes to update (edges ignored).
+ * @returns The same store reference.
+ */
+export function mergeScene(store: any, edits: SceneSpec): any {
+  const byId = new Map(allRecords(store).map((r: any) => [r.id, r]))
+
+  for (const node of edits.nodes) {
+    const existing: any = byId.get(node.id)
+
+    if (!existing) {
+      // New node — delegate to the create path (bootstraps into existing store)
+      fromScene({ nodes: [node], edges: [] }, { existing: store })
+      continue
+    }
+
+    // Clone top-level record and props shallowly so untouched fields survive
+    const next: any = { ...existing, props: { ...existing.props } }
+
+    // Overwrite ONLY the fields present in the edit node
+    if ((node as any).x != null) next.x = (node as any).x
+    if ((node as any).y != null) next.y = (node as any).y
+    if ((node as any).text != null) next.props.richText = toRich((node as any).text)
+    if ((node as any).w != null) next.props.w = (node as any).w
+    if ((node as any).h != null) next.props.h = (node as any).h
+    if ((node as any).color != null) next.props.color = (node as any).color
+    if ((node as any).shape != null) next.props.geo = (node as any).shape
+    if ((node as any).fill != null) next.props.fill = (node as any).fill
+    if ((node as any).dash != null) next.props.dash = (node as any).dash
+
+    putRecord(store, next)
+  }
+
+  return store
+}
