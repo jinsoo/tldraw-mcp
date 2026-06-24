@@ -1,0 +1,40 @@
+{
+  "name": "tldraw-mcp",
+  "version": "0.1.0",
+  "description": "Headless MCP server to read/write tldraw .tldr diagrams — usable by any agent.",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jinsoo/tldraw-mcp.git"
+  },
+  "bin": {
+    "tldraw-mcp": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "src",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "prepare": "npm run build",
+    "probe-defaults": "node scripts/probe-defaults.mjs",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "@tldraw/editor": "5.1.1",
+    "@tldraw/store": "5.1.1",
+    "@tldraw/tlschema": "5.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.0",
+    "typescript": "^5.9.3",
+    "vitest": "^2.1.9"
+  }
+}
