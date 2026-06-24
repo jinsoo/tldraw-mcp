@@ -8,7 +8,7 @@
  * @tldraw/utils (reordering) is DOM-free and safe to import directly.
  */
 
-import { makeStore, putRecord, getDefaultPropsFor, createShapeId } from './tldrawApi.js'
+import { makeStore, putRecord, getDefaultPropsFor, createShapeId, createBindingId } from './tldrawApi.js'
 import { toRich } from './richtext.js'
 import { getIndicesAbove, ZERO_INDEX_KEY } from '@tldraw/utils'
 
@@ -173,6 +173,53 @@ export function fromScene(scene: SceneSpec, opts: { existing?: any } = {}): any 
 
   // Stash on the store object for Task 7 (edges need endpoint shape ids)
   ;(store as any).__idMap = idMap
+
+  // ── Edge loop (Task 7): each SceneEdge → one arrow shape + two binding records ──
+  const edges = scene.edges ?? []
+  edges.forEach((edge, j) => {
+    const fromShapeId = idMap.get(edge.from)
+    const toShapeId = idMap.get(edge.to)
+    if (!fromShapeId || !toShapeId) {
+      throw new Error(`edge references unknown node: ${edge.from} -> ${edge.to}`)
+    }
+    const arrowId = createShapeId()
+    const props: any = { ...getDefaultPropsFor('arrow'), richText: toRich(edge.text ?? '') }
+    if (edge.arrowheadStart != null) props.arrowheadStart = edge.arrowheadStart
+    if (edge.arrowheadEnd != null) props.arrowheadEnd = edge.arrowheadEnd
+    if (edge.dash != null) props.dash = edge.dash
+    if (edge.color != null) props.color = edge.color
+    putRecord(store, {
+      id: arrowId,
+      typeName: 'shape',
+      type: 'arrow',
+      x: 0,
+      y: 0,
+      rotation: 0,
+      index: indexAt(scene.nodes.length + j),
+      parentId: PAGE_ID,
+      isLocked: false,
+      opacity: 1,
+      meta: {},
+      props,
+    })
+    for (const [terminal, targetId] of [['start', fromShapeId], ['end', toShapeId]] as const) {
+      putRecord(store, {
+        id: createBindingId(),
+        typeName: 'binding',
+        type: 'arrow',
+        fromId: arrowId,
+        toId: targetId,
+        meta: {},
+        props: {
+          terminal,
+          normalizedAnchor: { x: 0.5, y: 0.5 },
+          isPrecise: false,
+          isExact: false,
+          snap: 'none',
+        },
+      })
+    }
+  })
 
   return store
 }
