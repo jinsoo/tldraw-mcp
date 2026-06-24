@@ -22,7 +22,7 @@ import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 
 // ── Types (re-exported for downstream use) ───────────────────────────────────
-export type { TLStore, TLRecord, SerializedSchema } from '@tldraw/store'
+export type { SerializedSchema } from '@tldraw/store'
 export type { TLSchema } from '@tldraw/tlschema'
 
 // ── Internal store factory ────────────────────────────────────────────────────

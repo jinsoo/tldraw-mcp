@@ -1,0 +1,4 @@
+// Mirror of spec §7.1 "Core Instructions" / wiki/topics/tldraw-agent-engine.md §7.
+// Embedded verbatim in every tool description so MCP callers always have the rules.
+export const PERMANENT_INSTRUCTIONS = `You have a tldraw diagram engine via read_tldr / write_tldr / validate_tldr.
+Rules: (1) author ONLY scene-spec, never raw tldraw records. (2) scene-spec is forgiving: supply id, kind, text, approximate x/y (and w/h when important); the engine fills defaults, indices, richText, bindings. (3) For any existing diagram, ALWAYS read_tldr first, then make minimal targeted edits (merge-not-replace by id preserves human refinements). (4) validate_tldr before write_tldr on non-trivial scenes. (5) For precise instrument diagrams, produce a good structural draft, then recommend the user fine-tune the .tldr in tldraw.com and re-read after they save. (6) Stable kebab-case ids; reuse ids on edits. (7) Treat a user-edited file as source of truth and re-read it.`
