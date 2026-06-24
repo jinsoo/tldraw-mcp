@@ -378,3 +378,57 @@ export function mergeScene(store: any, edits: SceneSpec): any {
 
   return store
 }
+
+// ── Validate path (Task 10) ───────────────────────────────────────────────────
+
+const VALID_KINDS = new Set(['box', 'note', 'text'])
+const BOX_ONLY_FIELDS = ['shape', 'w', 'h', 'fill', 'dash']
+
+/**
+ * Pure structural validation of a SceneSpec.
+ *
+ * Checks (each emits a specific error message naming the offending id/value):
+ *   - unknown kind: kind not in {box, note, text}
+ *   - duplicate id: same id appears on two nodes
+ *   - dangling edge: from/to references a node id that doesn't exist
+ *   - missing x or y: node has no x or y coordinate
+ *   - zero/negative w or h: w or h is present but ≤ 0
+ *   - box-only field on note/text: shape/w/h/fill/dash present on a non-box node
+ *
+ * Enum-token validation (bad color/fill/geo values) is intentionally delegated
+ * to tldraw at write time (store.put throws on invalid tokens).
+ */
+export function validateScene(scene: SceneSpec): { valid: boolean; errors: string[]; warnings: string[] } {
+  const errors: string[] = []
+  const warnings: string[] = []
+  const seen = new Set<string>()
+
+  for (const n of scene.nodes ?? []) {
+    const node = n as any
+    if (!VALID_KINDS.has(node.kind)) {
+      errors.push(`unknown kind '${node.kind}' on node '${node.id}'`)
+    }
+    if (seen.has(node.id)) {
+      errors.push(`duplicate id '${node.id}'`)
+    }
+    seen.add(node.id)
+    if (node.x == null) errors.push(`missing x on node '${node.id}'`)
+    if (node.y == null) errors.push(`missing y on node '${node.id}'`)
+    if (node.w != null && node.w <= 0) errors.push(`w must be > 0 on node '${node.id}' (got ${node.w})`)
+    if (node.h != null && node.h <= 0) errors.push(`h must be > 0 on node '${node.id}' (got ${node.h})`)
+    if (node.kind !== 'box') {
+      for (const f of BOX_ONLY_FIELDS) {
+        if (node[f] != null) {
+          errors.push(`box-only field '${f}' on ${node.kind} node '${node.id}'`)
+        }
+      }
+    }
+  }
+
+  for (const e of scene.edges ?? []) {
+    if (!seen.has(e.from)) errors.push(`edge from unknown node '${e.from}'`)
+    if (!seen.has(e.to)) errors.push(`edge to unknown node '${e.to}'`)
+  }
+
+  return { valid: errors.length === 0, errors, warnings }
+}
