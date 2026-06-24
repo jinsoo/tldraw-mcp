@@ -33,6 +33,7 @@
     "@tldraw/tlschema": "5.1.1"
   },
   "devDependencies": {
+    "@kitschpatrol/tldraw-cli": "^6.0.0",
     "@types/node": "^22.20.0",
     "puppeteer": "^25.2.0",
     "typescript": "^5.9.3",
