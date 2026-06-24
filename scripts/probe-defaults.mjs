@@ -65,6 +65,18 @@ function validateViaStore(type, props) {
 
 const richText = { type: 'doc', content: [] }
 
+// ── AUTHOR-SUPPLIED SCALAR DEFAULTS (tldraw 5.1.1) ──────────────────────────
+// The numeric/complex fields below (w, h, growY, scale, autoSize, richText,
+// url, bend, start/end, labelPosition, fontSizeAdjustment, elbowMidPoint …)
+// are NOT live-extracted: @tldraw/tlschema only exports validators, not
+// getDefaultProps() — that lives in the DOM/editor layer which hangs node.
+// store.put() validates their TYPE and enum membership but NOT their VALUE;
+// if a future tldraw version silently changes e.g. bend 0→0.1, defaults.json
+// will stay stale. ON A TLDRAW VERSION BUMP: eyeball these against the new
+// version's real getDefaultProps() (e.g. a one-off Chromium probe — L2 render
+// task adds Chromium, so this probe could later be upgraded to extract them).
+// ────────────────────────────────────────────────────────────────────────────
+
 // geo: w/h are required at creation time by the caller (not truly default-able)
 // We include w/h=100/100 as sentinel defaults — the engine always overrides them.
 const geoDefaults = buildDefaults(geoShapeProps, {
