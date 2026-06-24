@@ -14,7 +14,7 @@
  * All tldraw access goes through tldrawApi.ts only.
  */
 
-import { makeSchema, makeStore, putRecord } from './tldrawApi.js'
+import { makeSchema, makeStore, putRecord, allRecords, serializeSchema } from './tldrawApi.js'
 
 export interface ReadTldrResult {
   store: ReturnType<typeof makeStore>
@@ -73,4 +73,24 @@ export function readTldrFile(json: string): ReadTldrResult {
   }
 
   return { store, migrated, fileVersion }
+}
+
+/**
+ * Serializes a TLStore to a .tldr file JSON string (hand-assembled envelope).
+ *
+ * Does NOT use serializeTldrawJson — that requires an Editor instance and hangs Node.
+ * Instead, hand-assembles the envelope directly from the store's records and schema.
+ *
+ * Envelope format:
+ *   { tldrawFileFormatVersion: 1, schema: SerializedSchema, records: TLRecord[] }
+ *
+ * Note: records is a flat ARRAY (not a map) — readTldrFile converts array→map on read.
+ * If a record was skipped on read (unrecognised type), it will not appear in the output.
+ */
+export function writeTldrFile(store: ReturnType<typeof makeStore>): string {
+  return JSON.stringify({
+    tldrawFileFormatVersion: 1,
+    schema: serializeSchema(store),
+    records: allRecords(store), // flat ARRAY of document-scoped records
+  })
 }

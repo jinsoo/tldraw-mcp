@@ -53,3 +53,20 @@ describe('readTldrFile', () => {
     expect(typeNames).toContain('shape')
   })
 })
+
+import { writeTldrFile } from '../src/tldrFile.js'
+
+describe('writeTldrFile', () => {
+  it('round-trips: read → write → read keeps the shape records', () => {
+    const a = readTldrFile(current)
+    const json = writeTldrFile(a.store)
+    const parsed = JSON.parse(json)
+    expect(parsed.tldrawFileFormatVersion).toBe(1)
+    expect(Array.isArray(parsed.records)).toBe(true)        // ARRAY, not a map
+    expect(parsed.schema.schemaVersion).toBe(2)
+    const b = readTldrFile(json)
+    const shapesA = a.store.allRecords().filter((r: any) => r.typeName === 'shape').length
+    const shapesB = b.store.allRecords().filter((r: any) => r.typeName === 'shape').length
+    expect(shapesB).toBe(shapesA)
+  })
+})
